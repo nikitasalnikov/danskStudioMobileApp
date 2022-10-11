@@ -1,68 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:login_page/pages/video_player_widget.dart';
-import 'package:video_player/video_player.dart';
+import 'package:login_page/provider/lessons_provider.dart';
+import 'package:provider/provider.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final user = FirebaseAuth.instance.currentUser!;
-  VideoPlayerController? controller;
-  bool isPlaying = false;
-  final asset = 'assets/video/video_message.mp4';
-
-  @override
-  void initState() {
-    super.initState();
-    controller = VideoPlayerController.asset(asset)
-      ..addListener(() => setState(() {}))
-      // ..setLooping(true)
-      ..initialize().then((_) => controller?.pause());
-  }
-
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            VideoPlayerWidget(controller: controller as VideoPlayerController),
-            const SizedBox(height: 20),
-            FloatingActionButton(
-              onPressed: () async {
-                controller?.play();
-              },
-              child: Text(
-                'play'.toUpperCase(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            MaterialButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-              },
+      appBar: AppBar(backgroundColor: Colors.amber[200], actions: [
+        IconButton(
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+            },
+            icon: const Icon(
+              Icons.exit_to_app,
               color: Colors.deepPurple,
-              child: const Text(
-                'Sign out',
-                style: TextStyle(
-                  color: Colors.white,
+            ))
+      ]),
+      body: const ListWidget(),
+    );
+  }
+}
+
+class ListWidget extends StatelessWidget {
+  const ListWidget({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final listLessons = Provider.of<LessonsProvider>(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 15.0),
+      child: Center(
+        child: ListView.separated(
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, '/lesson_page');
+                },
+                child: ListTile(
+                  leading: const Image(
+                    image: AssetImage('assets/images/speaker.gif'),
+                  ),
+                  title: Text(listLessons.lessons[index]),
                 ),
-              ),
-            ),
-          ],
-        ),
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) =>
+                const Divider(),
+            itemCount: 10),
       ),
     );
   }
